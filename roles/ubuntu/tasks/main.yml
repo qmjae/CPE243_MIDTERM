@@ -1,0 +1,57 @@
+- name: Stopping iptables service
+  systemd: 
+    name: iptables
+    masked: true
+
+- name: Uninstalling ufw
+  apt: 
+    name: ufw
+    state: absent
+
+- name: Installing firewalld
+  apt: 
+    name: firewalld
+
+- name: Checking firewalld service
+  shell: |
+    sudo systemctl status firewalld
+
+- name: Starting and enabling firewalld
+  systemd:
+    name: firewalld
+    enabled: true
+
+- name: Permitting SSH
+  firewalld:
+    service: ssh
+    permanent: true
+    state: enabled
+
+- name: Permitting HTTP
+  firewalld:
+    service: http
+    permanent: true
+    state: enabled
+
+- name: Permitting HTTPS
+  firewalld:
+    service: https
+    permanent: true
+    state: enabled
+
+- block:
+  - name: Displaying the status
+    command: systemctl status firewalld
+    register: firewalld_service
+
+  - debug:
+       msg="{{ firewalld_service }}"
+
+  - name: Displaying the status
+    command: firewall-cmd --list-services
+    register: allowed_services
+
+  - debug:
+      msg="{{ allowed_services }}"
+
+
